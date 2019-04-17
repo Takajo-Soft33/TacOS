@@ -28,7 +28,7 @@
   *
   */
 
-#define DEBUG
+//#define DEBUG
 
 #if defined(DEBUG)
 # define debug(...) fprintf(stderr, __VA_ARGS__)
@@ -89,12 +89,14 @@ public int main(int argc, char[][] argv) {
   int cfsize = 0;
   while (cfsize<fsize) {
     fgets(bbuf, N, stdin);
+    int blen = strLen(bbuf) - 1;
     /// [入力のパース]
 
     int offset = 0;
-    for(;;) {
+    while(offset < blen) {
       int dataLen = b64_in(offset, bbuf, outbuf);
-      bwrite(fp, bbuf, dataLen);
+      bwrite(fp, outbuf, dataLen);
+      offset = offset + 4;
       cfsize = cfsize + dataLen;
       if(dataLen < 3) break;
     }
