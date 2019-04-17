@@ -23,23 +23,33 @@
   * ss/ss.cmm : ファイル送信プログラム
   *
   * 2019.01.28 : 新規作成
+  * 2019.04.10
   *
   * $Id$
   *
   */
 
 
+//#define DEBUG
+
+#if defined(DEBUG)
+# define debug(...) fprintf(stderr, __VA_ARGS__)
+#else
+# define debug(...) /* debug(__VA_ARGS__) */
+#endif
+
 #include <stdio.hmm>
 #include <stdlib.hmm>
 #include <string.hmm>
 
-#define BLOCK_SIZE 16
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 240
+#define BLOCK_SIZE (BUFFER_SIZE * 4 / 3)
 
 int[] filesize = array(2);
 char[] buffer = array(BUFFER_SIZE);
 
 void output(int length, char[] buffer, boolean wait_for_ack);
+void b64_out(int length, int offset, char[] buffer);
 
 public int main(int argc, char[][] argv){
 
@@ -65,37 +75,43 @@ public int main(int argc, char[][] argv){
 
   //int checksum = 0;
 
+  debug("A\n");
+
   int length = 0;
   while (!feof(fp)){
+    debug("B\n");
     char c = fgetc(fp);
     buffer[length] = c;
     length = length + 1;
 
-    if (length == BLOCK_SIZE){
+    if (length == BUFFER_SIZE){
+      debug("C\n");
       output(length, buffer, true);
       length = 0;
     }
   }
   if (length > 0) {
+    debug("D\n");
     output(length, buffer, false);
+    length = 0;
   }
 
   return 0;
 }
 
-public int sleep(int s);
-
 void output(int length, char[] buffer, boolean wait_for_ack){
-  for (int i = 0; i < length; i = i + 1){
-    /* sleep(1); */
-    fprintf(stdout, "%02x", ord(buffer[i]));
+  int offset = 0;
+  while(offset < length) {
+    debug("E\n");
+    int outlen = length - offset;
+    if(outlen > 3) outlen = 3;
+    b64_out(outlen, offset, buffer);
+    offset = offset + outlen;
   }
   fprintf(stdout, "\n");
-  fflush(stdout);
 
   /* Ackを待つ */
   while (wait_for_ack){
-    sleep(0);
     fgets(buffer, BUFFER_SIZE, stdin);
     if (strNcmp(buffer, "!Ack", 4) != 0){
       if(buffer[0] == '!') {
@@ -106,4 +122,34 @@ void output(int length, char[] buffer, boolean wait_for_ack){
     }
     break;
   }
+}
+
+char[] b64T = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/";
+
+/**
+ * print(base64_encode(buffer[offset, length]))
+ * @param length <= 3
+ */
+void b64_out(int length, int offset, char[] buffer) {
+  char c0 = '=', c1 = '=', c2 = '=', c3 = '=';
+  if(length >= 1) {
+    int i0 = ord(buffer[offset]) >> 2 & 0x3f;
+    c0 = b64T[i0];
+    int i1 = ord(buffer[offset]) << 4 & 0x30;
+
+    if(length >= 2) {
+      i1 = i1 | ord(buffer[offset + 1]) >> 4 & 0x0f;
+      int i2 = ord(buffer[offset + 1]) << 2 & 0x3c;
+
+      if(length >= 3) {
+        i2 = i2 | ord(buffer[offset + 2]) >> 6 & 0x03;
+        int i3 = ord(buffer[offset + 2]) & 0x3f;
+        c3 = b64T[i3];
+      }
+      c2 = b64T[i2];
+    }
+    c1 = b64T[i1];
+  }
+  debug("F\n");
+  fprintf(stdout, "%c%c%c%c", c0, c1, c2, c3);
 }
