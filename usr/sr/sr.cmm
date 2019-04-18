@@ -53,20 +53,20 @@ int b64_in(int offset, char[] buffer, char[] outbuf);
 
 public int main(int argc, char[][] argv) {
   if (argc>1) {
-    debug("Usage: %s\n", argv[0]);
+    fprintf(stderr, "Usage: %s\n", argv[0]);
     return 1;
   }
 
   fgets(lbuf, N, stdin);
   int pos=strRchr(lbuf, '\n');
   if (pos==-1) {
-    debug("format error");
+    fprintf(stderr, "format error");
     exit(1);
   }
 
   lbuf[pos] = '\0';
 
-  debug("fopen:%s\n",lbuf);
+  debug("sr: fopen:%s\n",lbuf);
   FILE fp = fopen(lbuf, "w");
   if (fp==null) {
     perror(lbuf);
@@ -75,20 +75,23 @@ public int main(int argc, char[][] argv) {
 
   fgets(lbuf, N, stdin);
   int fsize = atoi(lbuf);
-  debug("filelength:%s:%d\n",lbuf,fsize);
+  debug("sr: filelength:%s:%d\n",lbuf,fsize);
 
 
   fgets(lbuf, N, stdin);
   int bsize = atoi(lbuf);
-  debug("blocksize:%s:%d\n",lbuf,bsize);
+  debug("sr: blocksize:%s:%d\n",lbuf,bsize);
 
 
-  char[] bbuf = malloc(bsize + 1);
+  char[] bbuf = malloc(bsize + 2);
   char[] outbuf = malloc(3);
 
   int cfsize = 0;
   while (cfsize<fsize) {
     fgets(bbuf, N, stdin);
+    fprintf(stdout, "!Ack\n");
+    fflush(stdout);
+
     int blen = strLen(bbuf) - 1;
     /// [入力のパース]
 
@@ -101,15 +104,13 @@ public int main(int argc, char[][] argv) {
       if(dataLen < 3) break;
     }
 
-    debug("file: %d / %d\n", cfsize, fsize);
+    debug("sr: file: %d / %d\n", cfsize, fsize);
 
     if(cfsize > fsize) {
-      printf("!sent data is longer than filesize!\n");
+      fprintf(stderr, "!sent data is longer than filesize!\n");
       exit(1);
     }
     /// [/入力のパース]
-
-    printf("!Ack\n");
 
   }
   fclose(fp);
