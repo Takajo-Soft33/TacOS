@@ -43,7 +43,7 @@
 #include <string.hmm>
 
 #define BUFFER_SIZE 240
-#define BLOCK_SIZE (BUFFER_SIZE * 4 / 3)
+#define BLOCK_SIZE ((BUFFER_SIZE * 4 + 2) / 3)
 
 int[] filesize = array(2);
 char[] buffer = array(BUFFER_SIZE);
@@ -54,7 +54,7 @@ void b64_out(int length, int offset, char[] buffer);
 public int main(int argc, char[][] argv){
 
   if (argc < 2){ /* ファイル名がない */
-    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <filename> [<as>]\n", argv[0]);
     return 1;
   }
   /* ファイル長を取得 */
@@ -69,30 +69,33 @@ public int main(int argc, char[][] argv){
     return 1;
   }
 
-  printf("%s\n", argv[1]); /* ファイル名を出力 */
+  char[] filename_as = argv[1];
+  if(argc >= 3){
+    filename_as = argv[2];
+  }
+
+  printf("%s\n", filename_as); /* ファイル名を出力 */
+  fflush(stdout);
   printf("%d\n", filesize[1]); /* ファイル長の下位32bit */
+  fflush(stdout);
   printf("%d\n", BLOCK_SIZE); /* ブロックサイズ */
+  fflush(stdout);
 
   //int checksum = 0;
 
-  debug("A\n");
-
   int length = 0;
   while (!feof(fp)){
-    debug("B\n");
     char c = fgetc(fp);
     buffer[length] = c;
     length = length + 1;
 
     if (length == BUFFER_SIZE){
-      debug("C\n");
       output(length, buffer, true);
       length = 0;
     }
   }
   if (length > 0) {
-    debug("D\n");
-    output(length, buffer, false);
+    output(length, buffer, true);
     length = 0;
   }
 
@@ -102,13 +105,13 @@ public int main(int argc, char[][] argv){
 void output(int length, char[] buffer, boolean wait_for_ack){
   int offset = 0;
   while(offset < length) {
-    debug("E\n");
     int outlen = length - offset;
     if(outlen > 3) outlen = 3;
     b64_out(outlen, offset, buffer);
     offset = offset + outlen;
   }
   fprintf(stdout, "\n");
+  fflush(stdout);
 
   /* Ackを待つ */
   while (wait_for_ack){
@@ -118,6 +121,7 @@ void output(int length, char[] buffer, boolean wait_for_ack){
         fprintf(stderr, "error: %s\n", buffer);
         exit(-1); /* Ackではないものが返ってきたので異常終了 */
       }
+      debug("ss: Got ack");
       continue;
     }
     break;
@@ -150,6 +154,5 @@ void b64_out(int length, int offset, char[] buffer) {
     }
     c1 = b64T[i1];
   }
-  debug("F\n");
   fprintf(stdout, "%c%c%c%c", c0, c1, c2, c3);
 }
