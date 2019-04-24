@@ -34,7 +34,7 @@
 #include <string.hmm>
 
 #define BLOCK_SIZE 16
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 256
 
 int[] filesize = array(2);
 char[] buffer = array(BUFFER_SIZE);
@@ -44,7 +44,7 @@ void output(int length, char[] buffer, boolean wait_for_ack);
 public int main(int argc, char[][] argv){
 
   if (argc < 2){ /* ファイル名がない */
-    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <filename> [<rename>]\n", argv[0]);
     return 1;
   }
   /* ファイル長を取得 */
@@ -59,7 +59,12 @@ public int main(int argc, char[][] argv){
     return 1;
   }
 
-  printf("%s\n", argv[1]); /* ファイル名を出力 */
+  char[] filename = argv[1];
+  if (argc > 2){
+    filename = argv[2];
+  }
+
+  printf("%s\n", filename); /* ファイル名を出力 */
   printf("%d\n", filesize[1]); /* ファイル長の下位32bit */
   printf("%d\n", BLOCK_SIZE); /* ブロックサイズ */
 
@@ -83,11 +88,8 @@ public int main(int argc, char[][] argv){
   return 0;
 }
 
-public int sleep(int s);
-
 void output(int length, char[] buffer, boolean wait_for_ack){
   for (int i = 0; i < length; i = i + 1){
-    /* sleep(1); */
     fprintf(stdout, "%02x", ord(buffer[i]));
   }
   fprintf(stdout, "\n");
@@ -95,9 +97,8 @@ void output(int length, char[] buffer, boolean wait_for_ack){
 
   /* Ackを待つ */
   while (wait_for_ack){
-    sleep(0);
     fgets(buffer, BUFFER_SIZE, stdin);
-    if (strNcmp(buffer, "!Ack", 4) != 0){
+    if (strNcmp(buffer, "!A", 2) != 0){
       if(buffer[0] == '!') {
         fprintf(stderr, "error: %s\n", buffer);
         exit(-1); /* Ackではないものが返ってきたので異常終了 */
