@@ -28,7 +28,7 @@
   *
   */
 
-//#define DEBUG
+#define DEBUG
 
 #if defined(DEBUG)
 # define debug(...) fprintf(stderr, __VA_ARGS__)
@@ -43,11 +43,15 @@
 #define N 81
 char[] lbuf=array(N);
 
+void chomp(char[] str);
+
 void bwrite(FILE fp, char[] bbuf, int bsize) {
   for (int i=0; i<bsize; i=i+1) {
     fputc(bbuf[i], fp);
   }
 }
+
+int input(int length, char[] inbuf);
 
 int b64_in(int offset, char[] buffer, char[] outbuf);
 
@@ -57,30 +61,27 @@ public int main(int argc, char[][] argv) {
     return 1;
   }
 
+  // ファイル名入力
   fgets(lbuf, N, stdin);
-  int pos=strRchr(lbuf, '\n');
-  if (pos==-1) {
-    fprintf(stderr, "format error");
-    exit(1);
-  }
-
-  lbuf[pos] = '\0';
+  chomp(lbuf);
 
   debug("sr: fopen:%s\n",lbuf);
   FILE fp = fopen(lbuf, "w");
   if (fp==null) {
     perror(lbuf);
+    debug("sr: fp is null");
     exit(1);
   }
 
+  // ファイルサイズ入力
   fgets(lbuf, N, stdin);
   int fsize = atoi(lbuf);
-  debug("sr: filelength:%s:%d\n",lbuf,fsize);
+  debug("sr: filesize:%d\n",fsize);
 
-
+  // ブロックサイズ入力
   fgets(lbuf, N, stdin);
   int bsize = atoi(lbuf);
-  debug("sr: blocksize:%s:%d\n",lbuf,bsize);
+  debug("sr: blocksize:%d\n",bsize);
 
 
   char[] bbuf = malloc(bsize + 2);
@@ -88,8 +89,9 @@ public int main(int argc, char[][] argv) {
 
   int cfsize = 0;
   while (cfsize<fsize) {
-    fgets(bbuf, N, stdin);
-    fprintf(stdout, "!Ack\n");
+    input(bsize, bbuf);
+    fgets(bbuf, bsize + 2, stdin);
+    fprintf(stdout, "!\n");
     fflush(stdout);
 
     int blen = strLen(bbuf) - 1;
@@ -101,7 +103,6 @@ public int main(int argc, char[][] argv) {
       bwrite(fp, outbuf, dataLen);
       offset = offset + 4;
       cfsize = cfsize + dataLen;
-      if(dataLen < 3) break;
     }
 
     debug("sr: file: %d / %d\n", cfsize, fsize);
@@ -131,6 +132,17 @@ int b64_ind(char a) {
   return -1;
 }
 
+int input(int length, char[] inbuf) {
+  int i = 0;
+  while(i < length) {
+    char c = fgetc(stdin);
+    if(!isAlnum(c) && c != '+' && c != '/') continue; //BASE64文字列以外なら捨てる
+    inbuf[i] = c;
+    i = i + 1;
+  }
+  return i;
+}
+
 /**
  * buffer[offset]から読み、最大3文字をoutbufに格納する
  * @param offset 開始位置
@@ -151,4 +163,17 @@ int b64_in(int offset, char[] buffer, char[] outbuf) {
   if(i3 == -1) return 2;
   outbuf[2] = chr((i2 << 6 | i3) & 0xff);
   return 3;
+}
+
+/**
+ * strの末尾の改行を取り除く
+ * @param str 改行を含む文字列
+ */
+void chomp(char[] str) {
+  int pos=strRchr(str, '\n');
+  if (pos==-1) {
+    fprintf(stderr, "sr: format error");
+    exit(1);
+  }
+  str[pos] = '\0';
 }

@@ -30,10 +30,10 @@
   */
 
 
-//#define DEBUG
+#define DEBUG
 
 #if defined(DEBUG)
-# define debug(...) fprintf(stderr, __VA_ARGS__)
+# define debug(...) fprintf(tty, __VA_ARGS__)
 #else
 # define debug(...) /* debug(__VA_ARGS__) */
 #endif
@@ -42,7 +42,7 @@
 #include <stdlib.hmm>
 #include <string.hmm>
 
-#define BUFFER_SIZE 240
+#define BUFFER_SIZE 120
 #define BLOCK_SIZE ((BUFFER_SIZE * 4 + 2) / 3)
 
 int[] filesize = array(2);
@@ -51,7 +51,14 @@ char[] buffer = array(BUFFER_SIZE);
 void output(int length, char[] buffer, boolean wait_for_ack);
 void b64_out(int length, int offset, char[] buffer);
 
+#ifdef DEBUG
+FILE tty;
+#endif
+
 public int main(int argc, char[][] argv){
+#ifdef DEBUG
+  tty = fopen("/dev/ttys001", "w");
+#endif
 
   if (argc < 2){ /* ファイル名がない */
     fprintf(stderr, "Usage: %s <filename> [<as>]\n", argv[0]);
@@ -74,27 +81,34 @@ public int main(int argc, char[][] argv){
     filename_as = argv[2];
   }
 
+  debug("ss: filename: %s\n", filename_as);
   printf("%s\n", filename_as); /* ファイル名を出力 */
   fflush(stdout);
+  debug("ss: filesize: %d\n", filesize[1]);
   printf("%d\n", filesize[1]); /* ファイル長の下位32bit */
   fflush(stdout);
+  debug("ss: blocksize: %d\n", BLOCK_SIZE);
   printf("%d\n", BLOCK_SIZE); /* ブロックサイズ */
   fflush(stdout);
 
   //int checksum = 0;
 
   int length = 0;
+  int foff = 0;
   while (!feof(fp)){
     char c = fgetc(fp);
     buffer[length] = c;
     length = length + 1;
 
     if (length == BUFFER_SIZE){
+      debug("ss: file offset: %d\n", foff);
       output(length, buffer, true);
+      foff = foff + length;
       length = 0;
     }
   }
   if (length > 0) {
+    debug("ss: file offset: %d\n", foff);
     output(length, buffer, true);
     length = 0;
   }
@@ -110,20 +124,24 @@ void output(int length, char[] buffer, boolean wait_for_ack){
     b64_out(outlen, offset, buffer);
     offset = offset + outlen;
   }
-  fprintf(stdout, "\n");
+  fprintf(stdout, "\x0d\x0d\x0a\x0a");
   fflush(stdout);
 
   /* Ackを待つ */
   while (wait_for_ack){
-    fgets(buffer, BUFFER_SIZE, stdin);
-    if (strNcmp(buffer, "!Ack", 4) != 0){
+    if(fgets(buffer, BUFFER_SIZE, stdin) == null) {
+      fprintf(stderr, "ss: EOF\n");
+      exit(-1);
+    }
+    if (strNcmp(buffer, "!\n", 2) != 0){
       if(buffer[0] == '!') {
         fprintf(stderr, "error: %s\n", buffer);
         exit(-1); /* Ackではないものが返ってきたので異常終了 */
       }
-      debug("ss: Got ack");
+      debug("ss: Got ???: %s\n", buffer);
       continue;
     }
+    debug("ss: Got ack\n");
     break;
   }
 }
@@ -154,5 +172,8 @@ void b64_out(int length, int offset, char[] buffer) {
     }
     c1 = b64T[i1];
   }
-  fprintf(stdout, "%c%c%c%c", c0, c1, c2, c3);
+  fputc(c0, stdout);
+  fputc(c1, stdout);
+  fputc(c2, stdout);
+  fputc(c3, stdout);
 }
