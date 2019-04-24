@@ -71,7 +71,7 @@ public int main(int argc, char[][] argv){
 
   printf("%s\n", filename); /* ファイル名を出力 */
   printf("%d\n", filesize[1]); /* ファイル長の下位32bit */
-  printf("%d\n", BLOCK_SIZE_DST); /* ブロックサイズ */
+  printf("%d\n", BLOCK_SIZE_SRC); /* ブロックサイズ */
 
   //int checksum = 0;
 
