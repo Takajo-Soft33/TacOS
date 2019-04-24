@@ -33,11 +33,16 @@
 #include <stdlib.hmm>
 #include <string.hmm>
 
-#define BLOCK_SIZE 16
+#define BLOCK_SIZE_SRC 48
+#define BLOCK_SIZE_DST ((BLOCK_SIZE_SRC + 2) / 3 * 4)
 #define BUFFER_SIZE 256
 
 int[] filesize = array(2);
 char[] buffer = array(BUFFER_SIZE);
+char[] outbuf = array(BLOCK_SIZE_DST + 1);
+
+char[] base64chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+int base64encode(int inputLength, char[] input, char[] output);
 
 void output(int length, char[] buffer, boolean wait_for_ack);
 
@@ -66,7 +71,7 @@ public int main(int argc, char[][] argv){
 
   printf("%s\n", filename); /* ファイル名を出力 */
   printf("%d\n", filesize[1]); /* ファイル長の下位32bit */
-  printf("%d\n", BLOCK_SIZE); /* ブロックサイズ */
+  printf("%d\n", BLOCK_SIZE_DST); /* ブロックサイズ */
 
   //int checksum = 0;
 
@@ -76,7 +81,7 @@ public int main(int argc, char[][] argv){
     buffer[length] = c;
     length = length + 1;
 
-    if (length == BLOCK_SIZE){
+    if (length == BLOCK_SIZE_SRC){
       output(length, buffer, true);
       length = 0;
     }
@@ -89,10 +94,8 @@ public int main(int argc, char[][] argv){
 }
 
 void output(int length, char[] buffer, boolean wait_for_ack){
-  for (int i = 0; i < length; i = i + 1){
-    fprintf(stdout, "%02x", ord(buffer[i]));
-  }
-  fprintf(stdout, "\n");
+  base64encode(length, buffer, outbuf);
+  fprintf(stdout, "%s\n", outbuf);
   fflush(stdout);
 
   /* Ackを待つ */
@@ -107,4 +110,55 @@ void output(int length, char[] buffer, boolean wait_for_ack){
     }
     break;
   }
+}
+
+int base64encode(int inputLength, char[] input, char[] output) {
+  int part = 0;
+  int offset = 0;
+  int temp = 0;
+  for (int i = 0; i < inputLength; i = i + 1) {
+    if (0 == part) {
+      temp = ord(input[i]) >> 2 & 0x3f;
+      output[offset] = base64chars[temp];
+      offset = offset + 1;
+
+      temp = ord(input[i]) << 4 & 0x3f;
+    } else if (1 == part) {
+      temp = temp | ord(input[i]) >> 4 & 0x3f;
+      output[offset] = base64chars[temp];
+      offset = offset + 1;
+
+      temp = ord(input[i]) << 2 & 0x3f;
+    } else {
+      temp = temp | ord(input[i]) >> 6 & 0x3f;
+      output[offset] = base64chars[temp];
+      offset = offset + 1;
+
+      temp = ord(input[i]) & 0x3f;
+      output[offset] = base64chars[temp];
+      offset = offset + 1;
+    }
+
+    part = part + 1;
+    if (part == 3) {
+      part = 0;
+    }
+  }
+
+  if(0 < part) {
+    output[offset] = base64chars[temp];
+    offset = offset + 1;
+
+    output[offset] = '=';
+    offset = offset + 1;
+
+    if(2 > part) {
+      output[offset] = '=';
+      offset = offset + 1;
+    }
+  }
+
+  output[offset] = '\0';
+
+  return offset; /* outputLength */
 }

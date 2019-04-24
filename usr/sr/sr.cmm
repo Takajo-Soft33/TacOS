@@ -83,7 +83,7 @@ public int main(int argc, char[][] argv) {
     if (cbsize == bsize || cfsize == fsize) {
       bwrite(fp, bbuf, cbsize);
       cbsize = 0;
-      printf("!Ack\n");
+      printf("!A\n");
     }
 
   }
