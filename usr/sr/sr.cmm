@@ -1,4 +1,4 @@
-//#define DEBUG
+#define DEBUG
 
 #if defined(DEBUG)
 # define debug(...) fprintf(stderr, __VA_ARGS__)
@@ -85,9 +85,9 @@ public int main(int argc, char[][] argv) {
 }
 
 int base64ord(char c) {
-  if (isUpper(c)) return ord(c) - 0x41;
-  if (isLower(c)) return ord(c) - 0x61;
-  if (isDigit(c)) return ord(c) - 0x30;
+  if (isUpper(c)) return ord(c) - 0x41 + 0x00;
+  if (isLower(c)) return ord(c) - 0x61 + 0x1A;
+  if (isDigit(c)) return ord(c) - 0x30 + 0x34;
   if ('+' == c) return 0x3e;
   if ('-' == c) return 0x3f;
   return -1;

@@ -1,0 +1,25 @@
+# Chapter One: The Wrong Door
+This is a story about something that happened long ago when your grandfather was a child. It is a very important story because it show how all the comings and goings between our own world and the land of Narnia first began.
+
+  In those days Mr. Sherlock Holmes was still living in Baker Street and the Bastables were looking for treasure in the Lewisham Road. In those days, if you were a boy you had to wear a stiff Eton collar every day, and schools were usually nastier than now. But meals were nicer; and as for sweets, I won't tell you how cheap and good they were, because it would only make your mouth water in vain. And in those days there lived in London a girl called Polly Plummer.
+  She lived in one of a long row of houses which were all joined together. One morning she was out in the back garden when a boy scrambled up from the garden next door and put his face over the wall. Polly was very surprised because up till now there had never been any children in that house, but only Mr. Ketterley and Miss Ketterley, a brother and sister, old bachelor and old maid, living together. So she looked up, full of curiosity. The face of the strange boy was very grubby. It could hardly have been grubbier if he had first rubbed his hands in the earth, and then had a good cry, and then dried his face with his hands. As a matter of fact, this was very nearly what he had been doing.
+  "Hullo," said Polly.
+  "Hullo," said the boy. "What's your name?"
+  "Polly," said Polly. "What's yours?"
+  "Digory," said the boy.
+  "I say, what a funny name!" said Polly.
+  "It isn't half so funny as Polly," said Digory.
+  "Yes it is," said Polly.
+  "No, it isn't," said Digory.
+  "At any rate I do wash my face," said Polly, "Which is what you need to do; especially after --" and then she stopped. She had been going to say "After you've been blubbing," but she thought that wouldn't be polite.
+  "Alright, I have then," said Digory in a much louder voice, like a boy who was so miserable that he didn't care who knew he had been crying. "And so would you," he went on, "if you'd lived all your life in the country and had a pony, and a river at the bottom of the garden, and then been brought to live in a beastly Hole like this."
+  "London isn't a Hole," said Polly indignantly. But the boy was too wound up to take any notice of her, and he went on "And if your father was away in India -- and you had to come and live with an Aunt and an _Uncle_ who's mad (who would like that?) -- and if the reason was that they were looking after your Mother -- and if your Mother was ill and was going to -- going to -- die." Then his face went the wrong sort of shape as it does if you're trying to keep back your tears.
+  "I didn't know. I'm sorry," said Polly humbly. And then, because she hardly knew what to say, and also to turn Digory's mind to cheerful subjects, she asked:
+  "Is Mr. Ketterley really mad?"
+  "Well either he's mad," said Digory, "or there's some other mystery, He has a study on the top floor and Aunt Letty says I must never go up there. Well, that looks fishy to begin with. And then there's another thing. Whenever he tries to say anything to me at meal times -- he never even tries to talk to her -- she always shuts hip up. She says, "Don't worry the boy, Andrew" or "I'm sure Digory doesn't want to hear about that" or else "Now, Digory, wouldn't you like to go out and play in the garden?"
+  "What sort of things does he try to say?"
+  "I don't know. He never gets far enough. But there's more than that. One night -- it was last night in fact -- as I was going past the foot of the attic-stairs on my way to bed (and I don't much care for going past them either) I'm sure I heard a yell."
+  "Perhaps he keeps a mad wife shut up there."
+  "Yes, I've thought of that."
+  "Or perhaps he's a coiner."
+  "Or he might have been a pirate, like the man at the beginning of _Treasure Island_, and be always hiding from his old shipmates."
